@@ -8,7 +8,7 @@ Fixed based robot SPD in `simple_spd.py`
 
 Simple P controller with joint damping in `simple_position.py`
 
-**Current**: Shape error at higher DOFs.
+**Current**: Shape error at higher DOFs `error_spd.py`
 
 | SPD Low timestep(0.005s) | SPD High timestep(0.05s) |
 |:----------------:|:-----------------:|
