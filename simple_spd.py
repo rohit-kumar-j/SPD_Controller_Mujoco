@@ -11,8 +11,8 @@ model = mujoco.MjModel.from_xml_path("pendulum_spd.xml")
 data = mujoco.MjData(model)
 viewer = MujocoViewer(model, data)
 
-viewer.add_graph_line(line_name="sine_wave", line_data=0.0)
-viewer.add_graph_line(line_name="position_sensor", line_data=0.0)
+# viewer.add_graph_line(line_name="sine_wave", line_data=0.0)
+# viewer.add_graph_line(line_name="position_sensor", line_data=0.0)
 viewer.add_graph_line(line_name="force", line_data=0.0)
 viewer.add_graph_line(line_name="joint_pos_error", line_data=0.0)
 x_div = 10
@@ -76,10 +76,10 @@ while True:
     #     line_name="position_sensor",
     #     line_data=data.qpos[0],
     # )
-    # viewer.update_graph_line(
-    #     line_name="force",
-    #     line_data=data.ctrl[0],
-    # )
+    viewer.update_graph_line(
+        line_name="force",
+        line_data=spd_forces[0],
+    )
     viewer.update_graph_line(
         line_name="joint_pos_error",
         line_data=error,
