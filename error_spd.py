@@ -1,7 +1,7 @@
 import math
 import mujoco
 from mujoco_viewer import MujocoViewer
-from spd_utils import (
+from error_spd_utils import (
     computePD,
     populate_show_actuator_forces,
     show_actuator_forces,
