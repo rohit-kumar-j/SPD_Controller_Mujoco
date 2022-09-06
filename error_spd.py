@@ -41,6 +41,51 @@ while True:
     target_vel = next_pos - target_pos / model.opt.timestep
     error = target_pos - data.qpos[0].tolist()
 
+    l1 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "link_1")
+    b_jadr_l1 = model.body_jntadr[l1]
+    qposadr = model.jnt_qposadr[b_jadr_l1]
+    qveladr = model.jnt_dofadr[b_jadr_l1]
+    print(f"l1_bodyid: {l1}")
+    print(f"l1_model.body_jntadr: {model.body_jntadr}")
+    print(f"l1_b_jadr: {b_jadr_l1}")
+    print(f"qposadr: {qposadr}")
+    print(f"qveladr: {qveladr}\n")
+
+    l2 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "link_2")
+    b_jadr_l2 = model.body_jntadr[l2]
+    qposadr = model.jnt_qposadr[b_jadr_l2]
+    qveladr = model.jnt_dofadr[b_jadr_l2]
+    print(f"l2_bodyid: {l2}")
+    print(f"l2_model.body_jntadr: {model.body_jntadr}")
+    print(f"l2_b_jadr: {b_jadr_l2}")
+    print(f"qposadr: {qposadr}")
+    print(f"qveladr: {qveladr}\n")
+
+    l3 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "link_3")
+    b_jadr_l3 = model.body_jntadr[l3]
+    qposadr = model.jnt_qposadr[b_jadr_l3]
+    qveladr = model.jnt_dofadr[b_jadr_l3]
+    print(f"l3_bodyid: {l3}")
+    print(f"l3_model.body_jntadr: {model.body_jntadr}")
+    print(f"l3_b_jadr: {b_jadr_l3}")
+    print(f"qposadr: {qposadr}")
+    print(f"qveladr: {qveladr}\n")
+
+    fb = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_BODY, "my_floating_body")
+    b_jadr_fb = model.body_jntadr[fb]
+    fb_qposadr = model.jnt_qposadr[b_jadr_fb]
+    fb_qveladr = model.jnt_dofadr[b_jadr_fb]
+    print(f"fb_bodyid: {fb}")
+    print(f"fb_model.body_jntadr: {model.body_jntadr}")
+    print(f"fb_b_jadr: {b_jadr_fb}")
+    print(f"fb_qposadr: {fb_qposadr}")
+    print(f"fb_qveladr: {fb_qveladr}\n")
+
+    print(f"data.qpos: {data.qpos}")
+    print(f"data.qpos[fb_qposadr]: {data.qpos[fb_qposadr]}")
+    print(f"data.qvel: {data.qvel}")
+    print(f"data.qvel[qposadr]: {data.qvel[qposadr]}\n")
+
     spd_forces = computePD(
         model=model,
         data=data,
@@ -50,6 +95,7 @@ while True:
         kds=[general_kd] * model.nu,
         maxForces=[1000] * model.nu,
         timeStep=model.opt.timestep,
+        body_name="link_1",  # ,"my_floating_body",
     )
 
     show_actuator_forces(

@@ -27,7 +27,7 @@
                 </body>
             </body>
         </body>
-        <body pos=".5 -2 1" euler="10 10 10">
+        <body name="my_floating_body" pos=".5 -2 1" euler="10 10 10">
             <joint type="free" />
             <geom type="box" size="0.1 0.1 0.1" mass="1" />
         </body>

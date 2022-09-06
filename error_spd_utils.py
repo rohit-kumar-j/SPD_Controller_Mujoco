@@ -58,9 +58,9 @@ def computePD(
     print(
         f"MassMatrix: {MassMatrix},np.shape(MassMatrix):{np.shape(MassMatrix)}"
     )
-    # print(
-    #     f"Bias_Forces: {Bias_Forces},np.shape(Bias_Forces):{np.shape(Bias_Forces)}"
-    # )
+    print(
+        f"Bias_Forces: {Bias_Forces},np.shape(Bias_Forces):{np.shape(Bias_Forces)}"
+    )
 
     qError = q_des - q
     qdotError = qdot_des - qdot
