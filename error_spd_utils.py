@@ -96,9 +96,9 @@ def computePD(
     print(f"qveladr: {qveladr}\n")
 
     qddot = np.linalg.solve(
-        a=(MassMatrix[:3, :3] + Kd * timeStep),
+        a=(MassMatrix[:qveladr, :qveladr] + Kd * timeStep),
         b=(
-            -Bias_Forces[:3]
+            -Bias_Forces[:qveladr]
             + Kp.dot(qError - qdot * timeStep)
             + Kd.dot(qdotError)
         ),
