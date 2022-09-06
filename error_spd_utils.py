@@ -2,9 +2,40 @@ import mujoco
 import numpy as np
 
 
+def get_all_joint_indices(model, jnt_name):
+    jnt_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, jnt_name)
+    print(f"model.njnt: {model.njnt}")
+    print(f"model.nv: {model.nv}")
+    print(f"jnt_id: {jnt_id}")
+    print(f"model.jnt_dofadr: {model.jnt_dofadr}")
+    adr_start = model.jnt_dofadr[jnt_id]
+    vel_adr_start = model.jnt_qposadr[jnt_id]
+    print(f"adr_start: {adr_start}")
+
+    print(f"model.jnt_type: {model.jnt_type}")
+
+    # assuming only ball, hinge or slide is used
+    # Types of free, ball, slide, hinge: 0, 1, 2, 3
+    if model.jnt_type[jnt_id] == 0:
+        n_dofs = 6
+        print("free")
+    elif model.jnt_type[jnt_id] == 1:
+        n_dofs = 3
+        print("ball")
+    elif model.jnt_type[jnt_id] == 2:
+        n_dofs = 1
+        print("slide")
+    elif model.jnt_type[jnt_id] == 3:
+        n_dofs = 1
+        print("hinge")
+    # n_dofs = 1 if model.jnt_type[jnt_id] > 1 else 3
+    return np.arange(adr_start, adr_start + n_dofs)
+
+
 def computePD(
     model,
     data,
+    controlled_joint_ids,
     desiredPositions,
     desiredVelocities,
     kps,
@@ -69,6 +100,12 @@ def computePD(
     print(
         f"Bias_Forces: {Bias_Forces[:3]},np.shape(Bias_Forces):{np.shape(Bias_Forces[:3])}"
     )
+    dof_indices = np.concatenate(
+        [
+            get_all_joint_indices(model, joint_id)
+            for joint_id in controlled_joint_ids
+        ]
+    )
 
     qError = q_des - q
     qdotError = qdot_des - qdot
@@ -94,11 +131,13 @@ def computePD(
     ]
     print(f"qposadr: {qposadr}")
     print(f"qveladr: {qveladr}\n")
+    print(f"MM: {MassMatrix[dof_indices, dof_indices]}")
+    print(f"dof_indices: {dof_indices}")
 
     qddot = np.linalg.solve(
-        a=(MassMatrix[:qveladr, :qveladr] + Kd * timeStep),
+        a=(MassMatrix[:dof_indices, :dof_indices] + Kd * timeStep),
         b=(
-            -Bias_Forces[:qveladr]
+            -Bias_Forces[dof_indices]
             + Kp.dot(qError - qdot * timeStep)
             + Kd.dot(qdotError)
         ),

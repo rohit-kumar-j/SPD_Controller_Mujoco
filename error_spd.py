@@ -1,10 +1,12 @@
 import math
 import mujoco
+import numpy as np
 from mujoco_viewer import MujocoViewer
 from error_spd_utils import (
     computePD,
     populate_show_actuator_forces,
     show_actuator_forces,
+    get_all_joint_indices,
 )
 
 model = mujoco.MjModel.from_xml_path("pendulum_simple_position.xml")
@@ -35,6 +37,11 @@ rendered_axes, f_render, f_list = populate_show_actuator_forces(
     ],
 )
 
+h1 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge_1")
+h2 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge_2")
+h3 = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, "hinge_3")
+
+
 while True:
     target_pos = math.sin(t * 0.0001 * (180 / math.pi))
     next_pos = math.sin((t + 1) * 0.0001 * (180 / math.pi))
@@ -57,10 +64,25 @@ while True:
     ]
     print(f"qposadr: {qposadr}")
     print(f"qveladr: {qveladr}\n")
+    print("\n\n", get_all_joint_indices(model, "hinge_1"), "\n\n")
+    print("\n\n", get_all_joint_indices(model, "hinge_2"), "\n\n")
+    print("\n\n", get_all_joint_indices(model, "hinge_3"), "\n\n")
+
+    print("\n\n", get_all_joint_indices(model, "box_free_j"), "\n\n")
+    # dof_indices = np.concatenate(
+    #     [
+    #         get_all_joint_indices(model, joint_id)
+    #         for joint in controlled_joint_ids
+    #     ]
+    # )
+
+    # sub_M = full_M[dof_indices, dof_indices]
+    # sub_bias = bias[dof_indices]
 
     spd_forces = computePD(
         model=model,
         data=data,
+        controlled_joint_ids=["hinge1", "hinge2", "hinge3"],
         desiredPositions=[target_pos, -target_pos, target_pos],
         desiredVelocities=[0] * model.nu,
         kps=[general_kp] * model.nu,
