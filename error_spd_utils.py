@@ -12,6 +12,14 @@ def computePD(
     maxForces,
     timeStep,
 ):
+    qposadr = model.jnt_qposadr[
+        model.body_jntadr[
+            mujoco.mj_name2id(
+                model, mujoco.mjtObj.mjOBJ_BODY, "my_floating_body"
+            )
+        ]
+    ]
+
     q = np.array(
         [
             data.qpos[0],
@@ -56,10 +64,10 @@ def computePD(
     # print(f"Kp: {Kp},np.shape(Kp):{np.shape(Kp)}")
     print(f"Kd: {Kd},np.shape(Kd):{np.shape(Kd)}")
     print(
-        f"MassMatrix: {MassMatrix},np.shape(MassMatrix):{np.shape(MassMatrix)}"
+        f"MassMatrix: {MassMatrix[:3,:3]},np.shape(MassMatrix):{np.shape(MassMatrix[:3,:3])}"
     )
     print(
-        f"Bias_Forces: {Bias_Forces},np.shape(Bias_Forces):{np.shape(Bias_Forces)}"
+        f"Bias_Forces: {Bias_Forces[:3]},np.shape(Bias_Forces):{np.shape(Bias_Forces[:3])}"
     )
 
     qError = q_des - q
@@ -70,11 +78,29 @@ def computePD(
 
     # Compute -Kd(qdot - qdotdes)
     # d_term = Kd.dot(qdotError)
+    qposadr = model.jnt_qposadr[
+        model.body_jntadr[
+            mujoco.mj_name2id(
+                model, mujoco.mjtObj.mjOBJ_BODY, "my_floating_body"
+            )
+        ]
+    ]
+    qveladr = model.jnt_dofadr[
+        model.body_jntadr[
+            mujoco.mj_name2id(
+                model, mujoco.mjtObj.mjOBJ_BODY, "my_floating_body"
+            )
+        ]
+    ]
+    print(f"qposadr: {qposadr}")
+    print(f"qveladr: {qveladr}\n")
 
     qddot = np.linalg.solve(
-        a=(MassMatrix + Kd * timeStep),
+        a=(MassMatrix[:3, :3] + Kd * timeStep),
         b=(
-            -Bias_Forces + Kp.dot(qError - qdot * timeStep) + Kd.dot(qdotError)
+            -Bias_Forces[:3]
+            + Kp.dot(qError - qdot * timeStep)
+            + Kd.dot(qdotError)
         ),
     )
 
