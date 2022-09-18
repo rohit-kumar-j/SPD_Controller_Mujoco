@@ -2,14 +2,13 @@ import math
 import mujoco
 import numpy as np
 from mujoco_viewer import MujocoViewer
-from final_spd_utils import (
+from static_spd_utils import (
     computePD,
     populate_show_actuator_forces,
     show_actuator_forces,
-    get_all_joint_indices,
 )
 
-model = mujoco.MjModel.from_xml_path("pendulum_final_spd.xml")
+model = mujoco.MjModel.from_xml_path("pendulum_static_spd.xml")
 data = mujoco.MjData(model)
 viewer = MujocoViewer(model, data)
 
@@ -73,12 +72,12 @@ while True:
 
     t = t + 1
     data.ctrl = spd_forces
-    print(
-        "data.data.actuator_force: ",
-        data.actuator_force,
-        "spd_forces:",
-        spd_forces,
-    )
+    # print(
+    #     "data.data.actuator_force: ",
+    #     data.actuator_force,
+    #     "spd_forces:",
+    #     spd_forces,
+    # )
 
     # viewer.update_graph_line(
     #     line_name="sine_wave",

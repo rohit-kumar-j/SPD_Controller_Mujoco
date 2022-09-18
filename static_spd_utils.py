@@ -1,6 +1,34 @@
-import pprint
 import mujoco
 import numpy as np
+
+
+def get_all_joint_indices(model, jnt_name):
+    jnt_id = model.joint(jnt_name).dofadr[0]
+    # jnt_id = mujoco.mj_name2id(model, mujoco.mjtObj.mjOBJ_JOINT, jnt_name)
+    # print(f"jnt_id: {jnt_id}")
+
+    adr_start = model.jnt_dofadr[jnt_id]
+    vel_adr_start = model.jnt_qposadr[jnt_id]
+    # print(f"adr_start: {adr_start}")
+
+    # print(f"model.jnt_type: {model.jnt_type}")
+
+    # assuming only ball, hinge or slide is used
+    # Types of free, ball, slide, hinge: 0, 1, 2, 3
+    if model.jnt_type[jnt_id] == 0:
+        n_dofs = 6
+        # print("free")
+    elif model.jnt_type[jnt_id] == 1:
+        n_dofs = 3
+        # print("ball")
+    elif model.jnt_type[jnt_id] == 2:
+        n_dofs = 1
+        # print("slide")
+    elif model.jnt_type[jnt_id] == 3:
+        n_dofs = 1
+        # print("hinge")
+    # n_dofs = 1 if model.jnt_type[jnt_id] > 1 else 3
+    return np.arange(adr_start, adr_start + n_dofs)
 
 
 def computePD(
@@ -14,57 +42,58 @@ def computePD(
     maxForces,
     timeStep,
 ):
-
-    # get pos and vel
-    q = []
-    qdot = []
-    for i in controlled_joint_ids:
-        q.append(data.joint(i).qpos[0])
-        qdot.append(data.joint(i).qvel[0])
-
-    q = np.array(q)
-    qdot = np.array(qdot)
-
-    # print(f"q: {q}")
-    # print(f"qdot: {qdot}")
-
-    dof_indices = []
+    # decide length of q and qdot
+    q = np.empty(
+        [
+            len(desiredPositions),
+        ]
+    )
+    qdot = np.empty(
+        [
+            len(desiredVelocities),
+        ]
+    )
+    t = 0
     for i in controlled_joint_ids:
         jnt_id = model.joint(i).dofadr[0]
-        # adr_start = model.jnt_dofadr[jnt_id]
-        # adr_start = model.jnt_dofadr[jnt_id]
 
-        # if model.jnt_type[jnt_id] == 0:
-        #     n_dofs = 6
-        #     print("free")
-        # elif model.jnt_type[jnt_id] == 1:
-        #     n_dofs = 3
-        #     print("ball")
-        if model.joint(i).type == 2:
-            n_dofs = 1
-            # print("slide")
-        elif model.joint(i).type == 3:
-            n_dofs = 1
-            # print("hinge")
+        # free joint
+        if model.jnt_type[jnt_id] == 0:
+            q[t] = data.joint(jnt_id).qpos[0]
+            q[t + 1] = data.joint(jnt_id).qpos[1]
+            q[t + 2] = data.joint(jnt_id).qpos[2]
+            q[t + 3] = data.joint(jnt_id).qpos[3]
+            q[t + 4] = data.joint(jnt_id).qpos[4]
+            q[t + 5] = data.joint(jnt_id).qpos[5]
+            t = t + 6
 
-        x = np.arange(model.joint(i).dofadr, model.joint(i).dofadr + n_dofs)
-        # dof_indices.append(model.joint(i).dofadr[0])
-        dof_indices.append(x[0])
+        # ball joint
+        elif model.jnt_type[jnt_id] == 1:
+            q[t] = data.joint(jnt_id).qpos[0]
+            q[t + 1] = data.joint(jnt_id).qpos[1]
+            q[t + 2] = data.joint(jnt_id).qpos[2]
+            t = t + 3
 
-    # print(f"dof_indices: {dof_indices}")
+        # slider joint
+        elif model.jnt_type[jnt_id] == 2:
+            q[t] = data.joint(jnt_id).qpos
+            t = t + 1
 
-    ##########################################################################
+        # hinge joint
+        elif model.jnt_type[jnt_id] == 3:
+            q[t] = data.joint(jnt_id).qpos
+            t = t + 1
+
+    # print(f"q: {q}")
+
+    for i in range(0, len(controlled_joint_ids)):
+        qdot[i] = data.joint(controlled_joint_ids[i]).qvel
 
     q_des = np.array(desiredPositions)
     qdot_des = np.array(desiredVelocities)
 
-    # print(f"q_des: {q_des}")
-    # print(f"qdot_des: {qdot_des}")
-
     Kp = np.diagflat(kps)
     Kd = np.diagflat(kds)
-    # print(f"Kp: {Kp}")
-    # print(f"Kd: {Kd}")
 
     # Create empty mass matrix
     MassMatrix = np.empty(
@@ -81,12 +110,30 @@ def computePD(
         data.qM,
     )
 
-    MassMatrix = MassMatrix[dof_indices, :][:, dof_indices]
+    Bias_Forces = data.qfrc_bias
 
-    Bias_Forces = data.qfrc_bias[dof_indices]
+    dof_indices = []
+    for i in controlled_joint_ids:
+        jnt_id = model.joint(i).dofadr[0]
+        adr_start = model.jnt_dofadr[jnt_id]
 
-    # print(f"MassMatrix: {MassMatrix}")
-    # print(f"Bias_Forces: {Bias_Forces}")
+        if model.jnt_type[jnt_id] == 0:
+            n_dofs = 6
+            # print("free")
+        elif model.jnt_type[jnt_id] == 1:
+            n_dofs = 3
+            # print("ball")
+        elif model.jnt_type[jnt_id] == 2:
+            n_dofs = 1
+            # print("slide")
+        elif model.jnt_type[jnt_id] == 3:
+            n_dofs = 1
+            # print("hinge")
+
+        np.arange(adr_start, adr_start + n_dofs)
+        dof_indices.append(model.joint(i).dofadr[0])
+
+    # print(f"dof_indices: {dof_indices}")
 
     qError = q_des - q
     qdotError = qdot_des - qdot
@@ -98,8 +145,8 @@ def computePD(
     d_term = Kd.dot(qdotError)
 
     qddot = np.linalg.solve(
-        a=(MassMatrix + Kd * timeStep),
-        b=(-Bias_Forces + p_term + d_term),
+        a=(MassMatrix[dof_indices, :][:, dof_indices] + Kd * timeStep),
+        b=(-Bias_Forces[dof_indices] + p_term + d_term),
     )
 
     tau = (
@@ -182,18 +229,6 @@ def populate_show_actuator_forces(model, to_be_rendered_axes) -> None:
         "hinge_3": [
             "pos_servo_3",
             "site_3",
-            20.0,
-            [1, 0, 1, 0.2],
-        ],
-        "hinge_2_1": [
-            "pos_servo_2_1",
-            "site_2_1",
-            20.0,
-            [1, 0, 1, 0.2],
-        ],
-        "hinge_3_1": [
-            "pos_servo_3_1",
-            "site_3_1",
             20.0,
             [1, 0, 1, 0.2],
         ],

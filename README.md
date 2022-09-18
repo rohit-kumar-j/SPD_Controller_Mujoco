@@ -10,9 +10,15 @@ Simple P controller with joint damping in `simple_position.py`
 
 Shape error at higher DOFs `error_spd.py`
 
-**Current**: Works with extra free bodies added to the sim: `static_implementation.py` [stable at timestep = 0.1s]
+Works with extra free bodies added to the sim: `static_implementation.py` [stable at timestep = 0.1s]
 
-**TODO**: let robot have free link (is spd a good strategy?)
+**Current**: Let robot have free link - `final_implementation_spd.py`
+is spd a good strategy?: depends on the kp and kd tuning
+
+**TODO**: Reduce variable creation
+**TODO**: ball joints (also free joints?)
+
+___________________
 
 | SPD Low timestep(0.005s) | SPD High timestep(0.05s) |
 |:----------------:|:-----------------:|
