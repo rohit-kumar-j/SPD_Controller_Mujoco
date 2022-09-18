@@ -8,7 +8,11 @@ Fixed based robot SPD in `simple_spd.py`
 
 Simple P controller with joint damping in `simple_position.py`
 
-**Current**: Shape error at higher DOFs `error_spd.py`
+Shape error at higher DOFs `error_spd.py`
+
+**Current**: Works with extra free bodies added to the sim: `static_implementation.py` [stable at timestep = 0.1s]
+
+**TODO**: let robot have free link (is spd a good strategy?)
 
 | SPD Low timestep(0.005s) | SPD High timestep(0.05s) |
 |:----------------:|:-----------------:|
