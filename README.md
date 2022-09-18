@@ -17,7 +17,6 @@ is spd a good strategy?: depends on the kp and kd tuning
 
 **TODO**: Reduce variable creation
 **TODO**: ball joints (also free joints?)
-
 ___________________
 
 | SPD Low timestep(0.005s) | SPD High timestep(0.05s) |
@@ -27,3 +26,6 @@ ___________________
 | Simple P Low timestep(0.005s) | Simple P High timestep(0.05s) |
 |:---------------------:|:----------------------:|
 | <video src="https://user-images.githubusercontent.com/37873142/187661333-57c707cf-e7cd-4678-a2ae-e36ef6f94870.mp4"> | <video src="https://user-images.githubusercontent.com/37873142/187661414-f42be449-163a-4a66-8c5d-b8ffe2518258.mp4"> |
+___________________
+## External
+uses pybullet for easy gui based sliders
